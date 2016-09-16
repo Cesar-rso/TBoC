@@ -12,6 +12,9 @@ public class BulletScript : MonoBehaviour {
 		if(transform.tag=="Attack3"){
 			if (owner.GetComponent<PlayerControl> ().lastDirection == "right") {
 				transform.gameObject.GetComponent<Rigidbody2D> ().velocity = new Vector2 (bulletspeed, 0f);
+				float xScale = transform.localScale.x;
+				xScale *= -1;
+				transform.localScale = new Vector3 (xScale, transform.localScale.y, transform.localScale.z);
 			}
 			if (owner.GetComponent<PlayerControl> ().lastDirection == "left") {
 				transform.gameObject.GetComponent<Rigidbody2D> ().velocity = new Vector2 (-bulletspeed, 0f);
@@ -31,7 +34,8 @@ public class BulletScript : MonoBehaviour {
 
 
 	void OnTriggerEnter2D(Collider2D col) {
-		if((!col.gameObject.tag.Equals("trigger") || !col.gameObject.name.Contains("Spawner")) && !col.gameObject.name.Equals(owner.name)){
+		if((!col.gameObject.tag.Contains("trigger") || (!col.gameObject.name.Contains("Spawner")) && !col.gameObject.name.Equals(owner.name))){
+			Debug.Log (col.gameObject.tag + " " + col.gameObject.name);
 			Destroy(transform.gameObject);
 		}
 	}

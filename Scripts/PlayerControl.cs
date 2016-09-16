@@ -14,6 +14,7 @@ public class PlayerControl : MonoBehaviour {
 	public string bullettype = "arrow";               //identifying the type of projectile the player has
 	public string weapontype = "";                    //type of melee weapon the player has
 	public string PlayerID;
+	public string LastButtonPressed = "";             //Saves the last button pressed on the controller, to deal with a Unity bug with XBox360 controller
 	public bool Default_Keys = true;                    //if player is using default key bindings
 	public bool DoubleJumped = false;                   //if player already performed a double jump
 	public bool onAir = false;                          //if player is in the air or grounded when jumping
@@ -33,7 +34,7 @@ public class PlayerControl : MonoBehaviour {
 	public LayerMask ground;   //layer mask for ground and platforms, to easily identify ground
 
 
-	public Canvas PauseCanvas;
+	public Canvas PauseCanvas, OptionsCanvas;
 	
 	public bool CounterManager = false;  //if counter already finished counting
 	public bool lastShot = false;        //if has passed enough time since last shot
@@ -42,6 +43,9 @@ public class PlayerControl : MonoBehaviour {
 	void Start () {
 		if(PauseCanvas != null){
 			PauseCanvas.enabled = false;
+		}
+		if(OptionsCanvas != null){
+			OptionsCanvas.enabled = false;
 		}
 		if(Time.timeScale < 1f){
 			Time.timeScale = 1f;
@@ -62,25 +66,27 @@ public class PlayerControl : MonoBehaviour {
 		}
 		//Player actions
 		if(Default_Keys){
-			if(Input.GetKeyDown(KeyCode.D) && transform.GetComponent<Rigidbody2D>().velocity.x < 6.0f){
+			if(Input.GetKey(KeyCode.D) && transform.GetComponent<Rigidbody2D>().velocity.x < 6.0f){
 				//transform.GetComponent<Rigidbody2D>().AddForce(Vector2.right * 1200 * Time.deltaTime);
-				transform.GetComponent<Rigidbody2D>().velocity = new Vector2(5f,transform.GetComponent<Rigidbody2D>().velocity.y);
+				//transform.GetComponent<Rigidbody2D>().velocity = new Vector2(5f,transform.GetComponent<Rigidbody2D>().velocity.y);
+				PlayerMovement ("Horizontal", 1f);
 				lastDirection = "right";
 			}
 			if(Input.GetKeyUp(KeyCode.D)){
-				transform.GetComponent<Rigidbody2D>().velocity = new Vector2(0.5f,transform.GetComponent<Rigidbody2D>().velocity.y);
+				//transform.GetComponent<Rigidbody2D>().velocity = new Vector2(0.5f,transform.GetComponent<Rigidbody2D>().velocity.y);
 			}
 			if(Input.GetKeyUp(KeyCode.A)){
-				transform.GetComponent<Rigidbody2D>().velocity = new Vector2(-0.5f,transform.GetComponent<Rigidbody2D>().velocity.y);
+				//transform.GetComponent<Rigidbody2D>().velocity = new Vector2(-0.5f,transform.GetComponent<Rigidbody2D>().velocity.y);
 			}
-			if(Input.GetKeyDown(KeyCode.A) && transform.GetComponent<Rigidbody2D>().velocity.x > -6.0f){
+			if(Input.GetKey(KeyCode.A) && transform.GetComponent<Rigidbody2D>().velocity.x > -6.0f){
 				//transform.GetComponent<Rigidbody2D>().AddForce(Vector2.right * -1200 * Time.deltaTime);
-				transform.GetComponent<Rigidbody2D>().velocity = new Vector2(-5f,transform.GetComponent<Rigidbody2D>().velocity.y);
+				//transform.GetComponent<Rigidbody2D>().velocity = new Vector2(-5f,transform.GetComponent<Rigidbody2D>().velocity.y);
+				PlayerMovement ("Horizontal", -1f);
 				lastDirection = "left";
 			}
 			if(Input.GetKeyDown(KeyCode.W) && DoubleJumped == false){
-				transform.GetComponent<Rigidbody2D>().AddForce(Vector2.up * 32000 * Time.deltaTime);
-				
+				//transform.GetComponent<Rigidbody2D>().AddForce(Vector2.up * 32000 * Time.deltaTime);
+				PlayerMovement ("Vertical", 1f);
 				if(onAir){
 					DoubleJumped = true;
 				}
@@ -143,6 +149,7 @@ public class PlayerControl : MonoBehaviour {
 		if (ControllerPlugged) { //XBox 360 controller support
 			if (Input.GetAxis (PlayerID.Substring (7, 1) + "D-Pad Horizontal") > 0f || Input.GetAxis (PlayerID.Substring (7, 1) + "D-Pad Horizontal") < 0f) { // side movement (left and right)
 				PlayerMovement ("Horizontal", Input.GetAxis (PlayerID.Substring (7, 1) + "D-Pad Horizontal"));
+				LastButtonPressed = PlayerID.Substring (7, 1) + "D-Pad Horizontal";
 			}
 			float verticalDirection = Input.GetAxis (PlayerID.Substring (7, 1) + "D-Pad Vertical");
 			if ((verticalDirection > 0f || verticalDirection < 0f) && !DoubleJumped) { //jump for positive values, crouch for negative
@@ -150,24 +157,30 @@ public class PlayerControl : MonoBehaviour {
 					DoubleJumped = true;
 				}
 				PlayerMovement ("Vertical", verticalDirection);
+				LastButtonPressed = PlayerID.Substring (7, 1) + "D-Pad Vertical";
 				Debug.Log (onAir + " " + DoubleJumped);
 			}
 			if (verticalDirection == 0f && transform.localScale.y < 0.7f && Time.timeScale > 0f) { //if player crouched, get up
 				PlayerMovement ("Vertical", verticalDirection);
 			}
 			if (Input.GetButton (PlayerID.Substring (7, 1) + "A")) {
+				LastButtonPressed = PlayerID.Substring (7, 1) + "A";
 				Attack1 ();
 			}
 			if (Input.GetButton (PlayerID.Substring (7, 1) + "B") && !MeleeAttacking) {
+				LastButtonPressed = PlayerID.Substring (7, 1) + "B";
 				DropWeapon ();
 			}
 			if (Input.GetButton (PlayerID.Substring (7, 1) + "X")) {
+				LastButtonPressed = PlayerID.Substring (7, 1) + "X";
 				Attack2 ();
 			}
 			if (Input.GetButton (PlayerID.Substring (7, 1) + "Y")) {
+				LastButtonPressed = PlayerID.Substring (7, 1) + "Y";
 				Attack3 ();
 			}
 			if (Input.GetButton (PlayerID.Substring (7, 1) + "Start")) {
+				LastButtonPressed = PlayerID.Substring (7, 1) + "Start";
 				Pause ();
 			}
 		}
@@ -366,13 +379,15 @@ public class PlayerControl : MonoBehaviour {
 	}
 
 	public void Pause (){
-		if (PauseCanvas != null) {
-			if (PauseCanvas.enabled) {
-				Time.timeScale = 1f;
-				PauseCanvas.enabled = false;
-			} else {
-				Time.timeScale = 0f;
-				PauseCanvas.enabled = true;
+		if (LastButtonPressed.Contains (PlayerID.Substring (7, 1) + "Start")) {
+			if (PauseCanvas != null) {
+				if (PauseCanvas.enabled) {
+					Time.timeScale = 1f;
+					PauseCanvas.enabled = false;
+				} else {
+					Time.timeScale = 0f;
+					PauseCanvas.enabled = true;
+				}
 			}
 		}
 	}
