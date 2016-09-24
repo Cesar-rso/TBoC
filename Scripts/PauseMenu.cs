@@ -6,21 +6,36 @@ using System.Collections;
 public class PauseMenu : MonoBehaviour {
 
 
-	public Canvas PauseCanvas, OptionsCanvas;
-	public Slider VolumeSlider; 
+	public Canvas PauseCanvas;
+	public GameObject ResumeButton, RestartButton, OptionsButton, QuitButton, VolumeSlider, LanguageMenu,BackButton;
+	public GameObject datamanager;
+	public int currentPauseMenu = 1;
 
 	// Use this for initialization
 	void Start () {
-		if(PauseCanvas != null){
-			PauseCanvas.enabled = false;
-		}
-		if(OptionsCanvas != null){
-			OptionsCanvas.enabled = false;
-		}
+		VolumeSlider.GetComponent<AudioManager> ().VolumeSlider.value = datamanager.GetComponent<DataManager> ().volume;
+
+		VolumeSlider.SetActive (false);
+		LanguageMenu.SetActive (false);
+		BackButton.SetActive (false);
+
 	}
 	
 	// Update is called once per frame
 	void Update () {
+
+		if(!PauseCanvas.enabled && currentPauseMenu==2){
+			currentPauseMenu = 1;
+
+			ResumeButton.SetActive (true);
+			RestartButton.SetActive (true);
+			OptionsButton.SetActive (true);
+			QuitButton.SetActive (true);
+
+			VolumeSlider.SetActive (false);
+			LanguageMenu.SetActive (false);
+			BackButton.SetActive (false);
+		}
 	
 	}
 
@@ -36,20 +51,50 @@ public class PauseMenu : MonoBehaviour {
 		}
 	}
 
+	public void RestartLevel(){
+		datamanager.GetComponent<DataManager> ().Save ();
+		SceneManager.LoadScene (SceneManager.GetActiveScene().buildIndex);
+	}
+
 	public void Exit(){
+		datamanager.GetComponent<DataManager> ().Save ();
 		SceneManager.LoadScene ("MainMenu");
 	}
 
 	public void OptionsMenu(){
 
-		if (OptionsCanvas.enabled && Time.timeScale==0f) {
-			OptionsCanvas.enabled = false;
-			PauseCanvas.enabled = true;
+		if (currentPauseMenu == 1) {
+			currentPauseMenu = 2;
 
-		} else if (Time.timeScale == 0f) {
-			OptionsCanvas.enabled = true;
-			PauseCanvas.enabled = false;
+			ResumeButton.SetActive (false);
+			RestartButton.SetActive (false);
+			OptionsButton.SetActive (false);
+			QuitButton.SetActive (false);
 
+			VolumeSlider.SetActive (true);
+			LanguageMenu.SetActive (true);
+			BackButton.SetActive (true);
+			//Camera.main.GetComponent<AudioManager> ().VolumeSlider = volume;
 		}
+		else if(currentPauseMenu == 2){
+			currentPauseMenu = 1;
+
+			ResumeButton.SetActive (true);
+			RestartButton.SetActive (true);
+			OptionsButton.SetActive (true);
+			QuitButton.SetActive (true);
+
+			VolumeSlider.SetActive (false);
+			LanguageMenu.SetActive (false);
+			BackButton.SetActive (false);
+		}
+
+	}
+
+	public void ChangeLanguage(){
+	
+		string newLanguage = LanguageMenu.GetComponent<Dropdown> ().captionText.text;
+		Debug.Log (newLanguage);
+		datamanager.GetComponent<DataManager> ().language = newLanguage;  
 	}
 }

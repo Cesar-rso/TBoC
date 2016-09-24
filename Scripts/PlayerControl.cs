@@ -34,7 +34,7 @@ public class PlayerControl : MonoBehaviour {
 	public LayerMask ground;   //layer mask for ground and platforms, to easily identify ground
 
 
-	public Canvas PauseCanvas, OptionsCanvas;
+	public Canvas PauseCanvas;
 	
 	public bool CounterManager = false;  //if counter already finished counting
 	public bool lastShot = false;        //if has passed enough time since last shot
@@ -44,9 +44,7 @@ public class PlayerControl : MonoBehaviour {
 		if(PauseCanvas != null){
 			PauseCanvas.enabled = false;
 		}
-		if(OptionsCanvas != null){
-			OptionsCanvas.enabled = false;
-		}
+
 		if(Time.timeScale < 1f){
 			Time.timeScale = 1f;
 		}
@@ -111,6 +109,7 @@ public class PlayerControl : MonoBehaviour {
 			}
 			if(Input.GetKeyDown(KeyCode.Escape)){
 				Pause();
+				LastButtonPressed = "Escape";
 			}
 		}else{
 			if(Input.GetKey(right_Control) && transform.GetComponent<Rigidbody2D>().velocity.x < 6.0f){
@@ -121,6 +120,9 @@ public class PlayerControl : MonoBehaviour {
 			}
 			if(Input.GetKeyDown(up_Control) && transform.GetComponent<Rigidbody2D>().velocity.y < 6.0f && DoubleJumped == false){
 				PlayerMovement ("Vertical", 1f);
+				if(onAir){
+					DoubleJumped = true;
+				}
 			}
 			if(Input.GetKeyDown(down_Control)){
 				//transform.localScale -= new Vector3(0, 0.3f, 0);
@@ -379,14 +381,16 @@ public class PlayerControl : MonoBehaviour {
 	}
 
 	public void Pause (){
-		if (LastButtonPressed.Contains (PlayerID.Substring (7, 1) + "Start")) {
+		if (LastButtonPressed.Contains (PlayerID.Substring (7, 1) + "Start") || LastButtonPressed.Contains("Escape")) {
 			if (PauseCanvas != null) {
 				if (PauseCanvas.enabled) {
 					Time.timeScale = 1f;
 					PauseCanvas.enabled = false;
+				
 				} else {
 					Time.timeScale = 0f;
 					PauseCanvas.enabled = true;
+		
 				}
 			}
 		}
@@ -477,7 +481,7 @@ public class PlayerControl : MonoBehaviour {
 	}
 	
 	IEnumerator SwordCounter(){ //time between melee attacks
-		yield return new WaitForSeconds(1.8f);
+		yield return new WaitForSeconds(1.0f);
 		MeleeAttacking = false;
 	}
 }

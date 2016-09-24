@@ -28,4 +28,11 @@ public class SelectOnInput : MonoBehaviour {
 	{
 		buttonSelected = false;
 	}
+
+	//public void OnPointerEnter(PointerEventData eventData){
+	//	if (!buttonSelected) {
+	//		eventSystem.SetSelectedGameObject(selectedObject);
+	//		buttonSelected = true;
+	//	}
+	//}
 }
